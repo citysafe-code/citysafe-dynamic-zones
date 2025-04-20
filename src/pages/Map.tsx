@@ -12,9 +12,9 @@ const Map = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-2">Safety Zone Map</h1>
+          <h1 className="text-3xl font-bold mb-2">District Crime Map</h1>
           <p className="text-gray-600 mb-6">
-            Explore color-coded safety zones across the city based on recent crime data.
+            Explore color-coded safety districts across the region based on official crime data from 2018-2022.
           </p>
           
           <div className="mb-8">
@@ -23,13 +23,13 @@ const Map = () => {
                 <div>
                   <h3 className="font-semibold mb-1">Understanding the Map</h3>
                   <p className="text-sm text-gray-600">
-                    <span className="inline-block w-3 h-3 bg-citysafe-red rounded-full mr-1"></span> Red zones indicate high-risk areas with frequent incidents
+                    <span className="inline-block w-3 h-3 bg-citysafe-red rounded-full mr-1"></span> Red zones indicate high-risk districts with over 3,000 reported incidents
                   </p>
                   <p className="text-sm text-gray-600">
-                    <span className="inline-block w-3 h-3 bg-citysafe-amber rounded-full mr-1"></span> Yellow zones indicate medium-risk areas with occasional incidents
+                    <span className="inline-block w-3 h-3 bg-citysafe-amber rounded-full mr-1"></span> Yellow zones indicate medium-risk districts with 1,000-3,000 reported incidents
                   </p>
                   <p className="text-sm text-gray-600">
-                    <span className="inline-block w-3 h-3 bg-citysafe-green rounded-full mr-1"></span> Green zones indicate low-risk areas with rare incidents
+                    <span className="inline-block w-3 h-3 bg-citysafe-green rounded-full mr-1"></span> Green zones indicate low-risk districts with under 1,000 reported incidents
                   </p>
                 </div>
               </div>

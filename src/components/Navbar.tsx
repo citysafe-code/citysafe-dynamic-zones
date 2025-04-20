@@ -23,6 +23,7 @@ const Navbar = () => {
           <Link to="/map" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Map</Link>
           <Link to="/about" className="text-foreground/80 hover:text-citysafe-blue transition-colors">About</Link>
           <Link to="/information" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Information</Link>
+          <Link to="/contact" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Contact</Link>
           <Button asChild className="bg-citysafe-blue hover:bg-citysafe-blue-dark">
             <Link to="/map">Explore Map</Link>
           </Button>
@@ -70,6 +71,13 @@ const Navbar = () => {
               onClick={() => setIsOpen(false)}
             >
               Information
+            </Link>
+            <Link 
+              to="/contact" 
+              className="px-4 py-2 hover:bg-muted rounded-md"
+              onClick={() => setIsOpen(false)}
+            >
+              Contact
             </Link>
             <Button 
               asChild 

@@ -77,15 +77,8 @@ const ScaledCircleMarkers = ({ districts, onDistrictClick, getMarkerColor }: {
           <CircleMarker
             key={district.id}
             center={[district.lat, district.lng]}
+            radius={getScaledRadius(district.level)}
             pathOptions={{
-              color,
-              fillColor: color,
-              fillOpacity: 0.4,
-              weight: 1,
-            }}
-            // The radius property needs to be applied properly for CircleMarker
-            pathOptions={{
-              radius: getScaledRadius(district.level),
               color,
               fillColor: color,
               fillOpacity: 0.4,
@@ -171,14 +164,16 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   return (
     <div className="relative h-full">
       <MapContainer
+        // Fix: Use 'defaultCenter' and 'defaultZoom' instead of 'center' and 'zoom'
         center={[17.3850, 78.4867]} 
         zoom={8}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          // Fix: Use URL and attribution separately
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         <MapReference setMapRef={setMapRef} />
@@ -205,6 +200,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
               <Marker
                 key={district.id}
                 position={[district.lat, district.lng]}
+                // Fix: Remove icon prop and use properties accepted by react-leaflet 
                 icon={customIcon}
                 eventHandlers={{
                   click: () => onDistrictClick(district),

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -87,11 +88,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   };
 
-  const centerCoordinates: [number, number] = [17.3850, 78.4867];
+  const centerCoordinates = [17.3850, 78.4867];
 
   return (
     <MapContainer
-      center={centerCoordinates}
+      center={centerCoordinates as [number, number]} 
       zoom={8}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"
@@ -104,20 +105,17 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         const color = getMarkerColor(district.level);
         
         if (isHeatmapMode) {
-          // Create a circle for heatmap mode
-          const radius = district.level === 'red' ? 8000 :
-                        district.level === 'amber' ? 6000 : 4000;
-          
           return (
             <CircleMarker
               key={district.id}
               center={[district.lat, district.lng]}
-              radius={30}
               pathOptions={{
                 color,
                 fillColor: color,
                 fillOpacity: 0.4,
-                weight: 1
+                weight: 1,
+                radius: district.level === 'red' ? 30 : 
+                        district.level === 'amber' ? 20 : 10
               }}
               eventHandlers={{
                 click: () => onDistrictClick(district),

@@ -7,6 +7,24 @@ import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import { Locate } from 'lucide-react';
 
+// Define District type interface
+interface District {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  level: string;
+  years: Array<{
+    year: number;
+    murders: number;
+    dacoity: number;
+    robbery: number;
+    burglary: number;
+    kidnapping: number;
+    rape: number;
+  }>;
+}
+
 const districtData = [
   {
     id: 'cyberabad',
@@ -152,7 +170,7 @@ const districtData = [
 
 const availableYears = [2018, 2019, 2020, 2021, 2022];
 
-const calculateSafetyLevel = (district) => {
+const calculateSafetyLevel = (district: District) => {
   const latestYear = district.years[district.years.length - 1];
   const totalCrimes = latestYear.murders + latestYear.dacoity + latestYear.robbery + 
                      latestYear.burglary + latestYear.kidnapping;
@@ -162,7 +180,11 @@ const calculateSafetyLevel = (district) => {
   return 'green';
 };
 
-const ZoneCard = ({ district, selectedYear, onClick }) => {
+const ZoneCard = ({ district, selectedYear, onClick }: { 
+  district: District; 
+  selectedYear: number;
+  onClick: () => void;
+}) => {
   const yearData = district.years.find(y => y.year === selectedYear) || 
                   district.years[district.years.length - 1];
   
@@ -215,7 +237,7 @@ const MapComponent = () => {
     district => filter === 'all' || district.level === filter
   );
 
-  const handleDistrictCardClick = (district: typeof districtData[0]) => {
+  const handleDistrictCardClick = (district: District) => {
     setSelectedDistrict(district);
   };
 
@@ -333,12 +355,12 @@ const MapComponent = () => {
                     <div>
                       <h4 className="font-semibold mb-2">Crime Statistics for {selectedYear}</h4>
                       <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(selectedDistrict.years.find(y => y.year === selectedYear))
+                        {Object.entries(selectedDistrict.years.find(y => y.year === selectedYear) || {})
                           .filter(([key]) => key !== 'year')
                           .map(([key, value]) => (
                             <div key={key} className="bg-gray-50 p-2 rounded">
                               <p className="text-xs text-gray-500">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
-                              <p className="font-semibold">{value}</p>
+                              <p className="font-semibold">{value as React.ReactNode}</p>
                             </div>
                           ))
                         }

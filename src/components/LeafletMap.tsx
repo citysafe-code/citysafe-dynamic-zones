@@ -88,11 +88,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   };
 
-  const centerCoordinates = [17.3850, 78.4867];
+  const centerCoordinates: [number, number] = [17.3850, 78.4867];
 
   return (
     <MapContainer
-      center={centerCoordinates as [number, number]} 
+      center={centerCoordinates} 
       zoom={8}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"

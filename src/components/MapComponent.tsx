@@ -5,7 +5,7 @@ import { MapPin } from 'lucide-react';
 import LeafletMap from './LeafletMap';
 import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
-import { Locate } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // Define District type interface
 interface District {
@@ -248,66 +248,80 @@ const MapComponent = () => {
           <CardContent className="p-0 h-full">
             <div className="p-4 border-b">
               <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <NavigationMenu>
-                  <NavigationMenuList className="flex space-x-2 sm:space-x-4 flex-wrap">
-                    <NavigationMenuItem>
-                      <Button 
-                        variant={filter === 'all' ? 'default' : 'outline'} 
-                        onClick={() => setFilter('all')}
-                      >
-                        All Districts
+                <div className="flex items-center">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="mr-2">
+                        {filter === 'all' ? 'All Districts' : 
+                         filter === 'red' ? 'High Risk' : 
+                         filter === 'amber' ? 'Medium Risk' : 'Low Risk'}
                       </Button>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <Button 
-                        variant={filter === 'red' ? 'default' : 'outline'} 
-                        className={filter === 'red' ? 'bg-citysafe-red hover:bg-citysafe-red/90' : ''}
-                        onClick={() => setFilter('red')}
-                      >
-                        High Risk
-                      </Button>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <Button 
-                        variant={filter === 'amber' ? 'default' : 'outline'} 
-                        className={filter === 'amber' ? 'bg-citysafe-amber hover:bg-citysafe-amber/90' : ''}
-                        onClick={() => setFilter('amber')}
-                      >
-                        Medium Risk
-                      </Button>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <Button 
-                        variant={filter === 'green' ? 'default' : 'outline'} 
-                        className={filter === 'green' ? 'bg-citysafe-green hover:bg-citysafe-green/90' : ''}
-                        onClick={() => setFilter('green')}
-                      >
-                        Low Risk
-                      </Button>
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
-                
-                <div className="flex items-center gap-2 flex-wrap">
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-2">
+                      <div className="flex flex-col gap-2">
+                        <Button 
+                          variant={filter === 'all' ? 'default' : 'outline'} 
+                          onClick={() => setFilter('all')}
+                          className="justify-start"
+                        >
+                          All Districts
+                        </Button>
+                        <Button 
+                          variant={filter === 'red' ? 'default' : 'outline'} 
+                          className={`justify-start ${filter === 'red' ? 'bg-citysafe-red hover:bg-citysafe-red/90' : ''}`}
+                          onClick={() => setFilter('red')}
+                        >
+                          High Risk
+                        </Button>
+                        <Button 
+                          variant={filter === 'amber' ? 'default' : 'outline'} 
+                          className={`justify-start ${filter === 'amber' ? 'bg-citysafe-amber hover:bg-citysafe-amber/90' : ''}`}
+                          onClick={() => setFilter('amber')}
+                        >
+                          Medium Risk
+                        </Button>
+                        <Button 
+                          variant={filter === 'green' ? 'default' : 'outline'} 
+                          className={`justify-start ${filter === 'green' ? 'bg-citysafe-green hover:bg-citysafe-green/90' : ''}`}
+                          onClick={() => setFilter('green')}
+                        >
+                          Low Risk
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
                   <Button 
                     variant={isHeatmapMode ? "default" : "outline"}
                     size="sm"
                     onClick={() => setIsHeatmapMode(!isHeatmapMode)}
+                    className="mr-2"
                   >
                     {isHeatmapMode ? "Marker Mode" : "Heatmap Mode"}
                   </Button>
-                  
-                  {availableYears.map(year => (
-                    <Button 
-                      key={year}
-                      variant={selectedYear === year ? 'default' : 'outline'} 
-                      size="sm"
-                      onClick={() => setSelectedYear(year)}
-                    >
-                      {year}
-                    </Button>
-                  ))}
                 </div>
+                
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline">
+                      Year: {selectedYear}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2">
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {availableYears.map(year => (
+                        <Button 
+                          key={year}
+                          variant={selectedYear === year ? 'default' : 'outline'} 
+                          size="sm"
+                          onClick={() => setSelectedYear(year)}
+                        >
+                          {year}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="h-[calc(100%-80px)] w-full">

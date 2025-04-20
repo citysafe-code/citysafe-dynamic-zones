@@ -21,12 +21,10 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Home</Link>
           <Link to="/map" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Map</Link>
+          <Link to="/reviews" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Reviews</Link>
           <Link to="/about" className="text-foreground/80 hover:text-citysafe-blue transition-colors">About</Link>
           <Link to="/information" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Information</Link>
           <Link to="/contact" className="text-foreground/80 hover:text-citysafe-blue transition-colors">Contact</Link>
-          <Button asChild className="bg-citysafe-blue hover:bg-citysafe-blue-dark">
-            <Link to="/map">Explore Map</Link>
-          </Button>
         </nav>
         
         {/* Mobile Menu Button */}
@@ -59,6 +57,13 @@ const Navbar = () => {
               Map
             </Link>
             <Link 
+              to="/reviews" 
+              className="px-4 py-2 hover:bg-muted rounded-md"
+              onClick={() => setIsOpen(false)}
+            >
+              Reviews
+            </Link>
+            <Link 
               to="/about" 
               className="px-4 py-2 hover:bg-muted rounded-md"
               onClick={() => setIsOpen(false)}
@@ -79,13 +84,6 @@ const Navbar = () => {
             >
               Contact
             </Link>
-            <Button 
-              asChild 
-              className="bg-citysafe-blue hover:bg-citysafe-blue-dark mx-4"
-              onClick={() => setIsOpen(false)}
-            >
-              <Link to="/map">Explore Map</Link>
-            </Button>
           </div>
         </div>
       )}

@@ -207,8 +207,9 @@ const ZoneCard = ({ district, selectedYear, onClick }) => {
 
 const MapComponent = () => {
   const [selectedYear, setSelectedYear] = useState(2022);
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [filter, setFilter] = useState('all');
+  const [isHeatmapMode, setIsHeatmapMode] = useState(false);
 
   const filteredDistricts = districtData.filter(
     district => filter === 'all' || district.level === filter
@@ -267,12 +268,11 @@ const MapComponent = () => {
                 
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button 
-                    variant="outline" 
-                    size="icon"
-                    title="Find my location"
-                    className="mr-2"
+                    variant={isHeatmapMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsHeatmapMode(!isHeatmapMode)}
                   >
-                    <Locate className="h-4 w-4" />
+                    {isHeatmapMode ? "Marker Mode" : "Heatmap Mode"}
                   </Button>
                   
                   {availableYears.map(year => (
@@ -293,6 +293,7 @@ const MapComponent = () => {
                 districts={filteredDistricts}
                 selectedYear={selectedYear}
                 onDistrictClick={setSelectedDistrict}
+                isHeatmapMode={isHeatmapMode}
               />
             </div>
           </CardContent>

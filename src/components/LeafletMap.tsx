@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Locate } from 'lucide-react';
@@ -35,16 +34,28 @@ interface LeafletMapProps {
   districts: District[];
   selectedYear: number;
   onDistrictClick: (district: District) => void;
+  isHeatmapMode: boolean;
 }
 
 const LocationButton = () => {
   const map = useMap();
 
   const handleLocationClick = () => {
-    map.locate().on('locationfound', (e) => {
-      map.flyTo(e.latlng, 13);
-      L.marker(e.latlng).addTo(map);
-    });
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          map.flyTo([latitude, longitude], 13);
+          L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup("You are here")
+            .openPopup();
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }
   };
 
   return (
@@ -61,7 +72,12 @@ const LocationButton = () => {
   );
 };
 
-const LeafletMap: React.FC<LeafletMapProps> = ({ districts, selectedYear, onDistrictClick }) => {
+const LeafletMap: React.FC<LeafletMapProps> = ({ 
+  districts, 
+  selectedYear, 
+  onDistrictClick,
+  isHeatmapMode 
+}) => {
   const getMarkerColor = (level: string) => {
     switch (level) {
       case 'red': return '#DC2626';
@@ -71,9 +87,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ districts, selectedYear, onDist
     }
   };
 
+  const centerCoordinates: [number, number] = [17.3850, 78.4867];
+
   return (
     <MapContainer
-      center={[17.3850, 78.4867]} // Centered on Hyderabad
+      center={centerCoordinates}
       zoom={8}
       style={{ height: '100%', width: '100%' }}
       className="rounded-lg"
@@ -84,6 +102,38 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ districts, selectedYear, onDist
       />
       {districts.map((district) => {
         const color = getMarkerColor(district.level);
+        
+        if (isHeatmapMode) {
+          // Create a circle for heatmap mode
+          const radius = district.level === 'red' ? 8000 :
+                        district.level === 'amber' ? 6000 : 4000;
+          
+          return (
+            <CircleMarker
+              key={district.id}
+              center={[district.lat, district.lng]}
+              radius={30}
+              pathOptions={{
+                color,
+                fillColor: color,
+                fillOpacity: 0.4,
+                weight: 1
+              }}
+              eventHandlers={{
+                click: () => onDistrictClick(district),
+              }}
+            >
+              <Popup>
+                <div className="p-2">
+                  <strong>{district.name}</strong>
+                  <p className="text-sm">Click for details</p>
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        }
+
+        // Regular marker mode
         const customIcon = new L.DivIcon({
           className: 'custom-div-icon',
           html: `<div style="background-color: ${color}" class="marker-pin w-4 h-4 rounded-full border-2 border-white shadow-md"></div>`,

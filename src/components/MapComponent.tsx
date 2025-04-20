@@ -3,8 +3,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
-import { MapPin, Navigation } from 'lucide-react';
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
+import { MapPin, Navigation, Locate } from 'lucide-react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 // District crime data
 const districtData = [
@@ -192,7 +194,7 @@ const calculateSafetyLevel = (district) => {
 };
 
 // Zone cards component
-const ZoneCard = ({ district, selectedYear }) => {
+const ZoneCard = ({ district, selectedYear, onClick }) => {
   // Find the data for the selected year, or use the latest year if not found
   const yearData = district.years.find(y => y.year === selectedYear) || 
                   district.years[district.years.length - 1];
@@ -208,7 +210,7 @@ const ZoneCard = ({ district, selectedYear }) => {
     safetyLevel === 'amber' ? 'bg-citysafe-amber text-white' : 'bg-citysafe-green text-white';
   
   return (
-    <Card className="mb-4 overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="mb-4 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
       <CardContent className="p-0">
         <div className={`p-4 ${safetyLevel === 'red' ? 'zone-red' : safetyLevel === 'amber' ? 'zone-amber' : 'zone-green'}`}>
           <div className="flex items-center justify-between">
@@ -238,44 +240,169 @@ const ZoneCard = ({ district, selectedYear }) => {
 };
 
 const MapComponent = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [filter, setFilter] = useState<'all' | 'red' | 'amber' | 'green'>('all');
-  const [selectedYear, setSelectedYear] = useState<number>(2022);
+  const mapRef = useRef(null);
+  const mapboxMapRef = useRef(null);
+  const [mapboxToken, setMapboxToken] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(2022);
+  const [userLocation, setUserLocation] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [showMapTokenInput, setShowMapTokenInput] = useState(true);
+  const markersRef = useRef({});
   
   // Filter districts based on selected filter
   const filteredDistricts = filter === 'all' 
     ? districtData 
     : districtData.filter(district => district.level === filter);
   
-  // Mock map integration (in a real app, you'd use Mapbox, Google Maps, etc.)
+  // Get user's location
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          
+          if (mapboxMapRef.current) {
+            // Add a marker for the user's location if it doesn't exist
+            if (!markersRef.current.userMarker) {
+              const userMarkerElement = document.createElement('div');
+              userMarkerElement.className = 'user-marker';
+              userMarkerElement.innerHTML = `
+                <div class="animate-pulse w-5 h-5 bg-citysafe-blue rounded-full flex items-center justify-center">
+                  <div class="w-3 h-3 bg-white rounded-full"></div>
+                </div>
+              `;
+              
+              markersRef.current.userMarker = new mapboxgl.Marker(userMarkerElement)
+                .setLngLat([longitude, latitude])
+                .addTo(mapboxMapRef.current);
+            } else {
+              // Update the marker position
+              markersRef.current.userMarker.setLngLat([longitude, latitude]);
+            }
+            
+            // Center the map on the user's location
+            mapboxMapRef.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 10,
+              essential: true
+            });
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    }
+  };
+  
+  // Initialize mapbox map
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !mapboxToken) return;
     
-    // Mock map setup with a placeholder
-    mapRef.current.innerHTML = `
-      <div class="h-full w-full flex items-center justify-center bg-gray-100 rounded-lg">
-        <div class="text-center">
-          <div class="text-6xl mb-4">
-            <span class="mx-auto" style="font-size: 48px;">🗺️</span>
+    mapboxgl.accessToken = mapboxToken;
+    
+    // Create the map
+    const map = new mapboxgl.Map({
+      container: mapRef.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [78.4867, 17.3850], // Centered on Hyderabad
+      zoom: 7
+    });
+    
+    // Store the map reference
+    mapboxMapRef.current = map;
+    
+    // Add navigation controls
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    
+    // Add district markers when the map loads
+    map.on('load', () => {
+      // Add district markers
+      districtData.forEach(district => {
+        const { lat, lng, name, level } = district;
+        
+        // Create marker element
+        const markerElement = document.createElement('div');
+        markerElement.className = 'district-marker';
+        const markerColor = level === 'red' ? 'bg-citysafe-red' : level === 'amber' ? 'bg-citysafe-amber' : 'bg-citysafe-green';
+        markerElement.innerHTML = `
+          <div class="${markerColor} w-4 h-4 rounded-full border-2 border-white shadow-md"></div>
+        `;
+        
+        // Create popup
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div class="p-2">
+            <strong>${name}</strong>
+            <p class="text-sm">Click for details</p>
           </div>
-          <p class="text-lg font-medium text-gray-500">
-            Map would load here with the filtered districts
-          </p>
-          <p class="text-sm text-gray-400 mt-2">
-            Currently showing: ${filter === 'all' ? 'All Districts' : 
-              filter === 'red' ? 'High Risk Districts' : 
-              filter === 'amber' ? 'Medium Risk Districts' : 'Low Risk Districts'} (${selectedYear})
-          </p>
-        </div>
-      </div>
-    `;
+        `);
+        
+        // Add marker to map
+        const marker = new mapboxgl.Marker(markerElement)
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map);
+        
+        // Store marker reference
+        markersRef.current[district.id] = marker;
+        
+        // Add click event to marker
+        markerElement.addEventListener('click', () => {
+          setSelectedDistrict(district);
+          map.flyTo({
+            center: [lng, lat],
+            zoom: 11,
+            essential: true
+          });
+        });
+      });
+    });
     
-    // In a real implementation, you would initialize your map library here
-    // and add markers or polygons for each district
-  }, [filter, selectedYear]);
-
+    // Cleanup
+    return () => {
+      map.remove();
+    };
+  }, [mapboxToken]);
+  
+  // Update markers visibility based on filter
+  useEffect(() => {
+    if (!mapboxMapRef.current) return;
+    
+    districtData.forEach(district => {
+      const marker = markersRef.current[district.id];
+      if (!marker) return;
+      
+      if (filter === 'all' || district.level === filter) {
+        marker.getElement().style.display = 'block';
+      } else {
+        marker.getElement().style.display = 'none';
+      }
+    });
+  }, [filter]);
+  
+  // Handle district card click
+  const handleDistrictCardClick = (district) => {
+    setSelectedDistrict(district);
+    
+    if (mapboxMapRef.current) {
+      mapboxMapRef.current.flyTo({
+        center: [district.lng, district.lat],
+        zoom: 11,
+        essential: true
+      });
+    }
+  };
+  
   // Available years from the data
   const availableYears = [2018, 2019, 2020, 2021, 2022];
+  
+  // Handle mapbox token submission
+  const handleTokenSubmit = (e) => {
+    e.preventDefault();
+    setShowMapTokenInput(false);
+  };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -325,7 +452,17 @@ const MapComponent = () => {
                   </NavigationMenuList>
                 </NavigationMenu>
                 
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={getUserLocation}
+                    title="Find my location"
+                    className="mr-2"
+                  >
+                    <Locate className="h-4 w-4" />
+                  </Button>
+                  
                   {availableYears.map(year => (
                     <Button 
                       key={year}
@@ -341,7 +478,40 @@ const MapComponent = () => {
             </div>
             
             {/* Map container */}
-            <div ref={mapRef} className="h-[calc(100%-80px)] w-full"></div>
+            <div className="h-[calc(100%-80px)] w-full">
+              {showMapTokenInput ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="w-full max-w-md p-6">
+                    <h3 className="text-lg font-semibold mb-4">Mapbox API Key Required</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      To view the interactive map, please enter your Mapbox public token. 
+                      You can get one for free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-citysafe-blue hover:underline">mapbox.com</a>.
+                    </p>
+                    <form onSubmit={handleTokenSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label htmlFor="mapboxToken" className="text-sm font-medium">
+                          Mapbox Public Token
+                        </label>
+                        <input 
+                          type="text" 
+                          id="mapboxToken"
+                          value={mapboxToken}
+                          onChange={(e) => setMapboxToken(e.target.value)}
+                          className="w-full p-2 border rounded-md text-sm"
+                          placeholder="pk.eyJ1IjoieW91..."
+                          required
+                        />
+                      </div>
+                      <Button type="submit" disabled={!mapboxToken.trim()}>
+                        Load Map
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              ) : (
+                <div ref={mapRef} className="h-full w-full"></div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -349,14 +519,78 @@ const MapComponent = () => {
       <div className="col-span-1">
         <h2 className="text-xl font-semibold mb-4">Safety by District ({selectedYear})</h2>
         <div className="h-[550px] overflow-y-auto pr-2">
-          {filteredDistricts.map(district => (
-            <ZoneCard key={district.id} district={district} selectedYear={selectedYear} />
-          ))}
-          
-          {filteredDistricts.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No districts match the selected filter
+          {selectedDistrict ? (
+            <div className="mb-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSelectedDistrict(null)}
+                className="mb-2"
+              >
+                ← Back to all districts
+              </Button>
+              
+              <Card className="mb-4 overflow-hidden border-2" style={{ borderColor: selectedDistrict.level === 'red' ? '#DC2626' : selectedDistrict.level === 'amber' ? '#F59E0B' : '#10B981' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-6 w-6" />
+                      <h3 className="text-xl font-semibold">{selectedDistrict.name}</h3>
+                    </div>
+                    <Badge className={
+                      selectedDistrict.level === 'red' ? 'bg-citysafe-red text-white' :
+                      selectedDistrict.level === 'amber' ? 'bg-citysafe-amber text-white' : 'bg-citysafe-green text-white'
+                    }>
+                      {selectedDistrict.level === 'red' ? 'High Risk' : selectedDistrict.level === 'amber' ? 'Medium Risk' : 'Low Risk'}
+                    </Badge>
+                  </div>
+                  
+                  {selectedDistrict.years.find(y => y.year === selectedYear) && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Crime Statistics for {selectedYear}</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(selectedDistrict.years.find(y => y.year === selectedYear))
+                          .filter(([key]) => key !== 'year')
+                          .map(([key, value]) => (
+                            <div key={key} className="bg-gray-50 p-2 rounded">
+                              <p className="text-xs text-gray-500">{key.charAt(0).toUpperCase() + key.slice(1)}</p>
+                              <p className="font-semibold">{value}</p>
+                            </div>
+                          ))
+                        }
+                      </div>
+                      
+                      <div className="mt-4">
+                        <h4 className="font-semibold mb-2">Safety Tips</h4>
+                        <ul className="text-sm text-gray-600 list-disc list-inside">
+                          <li>Avoid traveling alone at night in this area</li>
+                          <li>Keep valuables secure and out of sight</li>
+                          <li>Stay on well-lit, populated streets</li>
+                          <li>Be aware of your surroundings at all times</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
+          ) : (
+            <>
+              {filteredDistricts.map(district => (
+                <ZoneCard 
+                  key={district.id} 
+                  district={district} 
+                  selectedYear={selectedYear} 
+                  onClick={() => handleDistrictCardClick(district)}
+                />
+              ))}
+              
+              {filteredDistricts.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No districts match the selected filter
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

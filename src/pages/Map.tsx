@@ -31,6 +31,9 @@ const Map = () => {
                   <p className="text-sm text-gray-600">
                     <span className="inline-block w-3 h-3 bg-citysafe-green rounded-full mr-1"></span> Green zones indicate low-risk districts with under 1,000 reported incidents
                   </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    <strong>💡 Tip:</strong> Click the location button to see your current position on the map
+                  </p>
                 </div>
               </div>
             </Card>

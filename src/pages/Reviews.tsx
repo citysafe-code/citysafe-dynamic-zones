@@ -7,37 +7,64 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { Star, User } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Mock data for reviews (In a real app, this would come from a database)
+// List of districts based on your data
+const districts = [
+  "Hyderabad",
+  "Cyberabad",
+  "Warangal",
+  "Rachakonda",
+  "Khammam"
+];
+
+// Mock data for district reviews (In a real app, this would come from a database)
 const initialReviews = [
   {
     id: 1,
     username: "Sarah Johnson",
+    district: "Hyderabad",
     rating: 4,
-    content: "Great resource for staying informed about city safety. The map feature is particularly helpful.",
+    content: "The area around Charminar is vibrant during the day but be cautious at night. Good police presence in tourist areas.",
     date: "2025-04-15"
   },
   {
     id: 2,
     username: "Michael Chen",
+    district: "Cyberabad",
     rating: 5,
-    content: "This tool has helped me make better decisions about which areas to visit. Very user-friendly!",
+    content: "Hi-tech city area is well-lit and safe. Many corporate offices have 24/7 security which adds to the safety.",
     date: "2025-04-18"
+  },
+  {
+    id: 3,
+    username: "Priya Sharma",
+    district: "Rachakonda",
+    rating: 3,
+    content: "Mixed experience. Some areas need better street lighting, but overall the police response is quick.",
+    date: "2025-04-19"
   }
 ];
 
 const Reviews = () => {
   const [reviews, setReviews] = useState(initialReviews);
   const [newReview, setNewReview] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [rating, setRating] = useState(5);
   const { toast } = useToast();
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newReview.trim()) {
+    if (!newReview.trim() || !selectedDistrict) {
       toast({
         title: "Error",
-        description: "Please write a review before submitting.",
+        description: selectedDistrict ? "Please write a review before submitting." : "Please select a district before submitting.",
         variant: "destructive"
       });
       return;
@@ -46,6 +73,7 @@ const Reviews = () => {
     const review = {
       id: reviews.length + 1,
       username: "Anonymous User", // In a real app, this would be the logged-in user's name
+      district: selectedDistrict,
       rating,
       content: newReview,
       date: new Date().toISOString().split('T')[0]
@@ -54,6 +82,7 @@ const Reviews = () => {
     setReviews([review, ...reviews]);
     setNewReview("");
     setRating(5);
+    setSelectedDistrict("");
     
     toast({
       title: "Success",
@@ -80,7 +109,10 @@ const Reviews = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-8">Community Reviews</h1>
+          <h1 className="text-3xl font-bold mb-2">District Safety Reviews</h1>
+          <p className="text-gray-600 mb-8">
+            Share your experiences and read others' reviews about safety in different districts.
+          </p>
           
           {/* Review Form */}
           <Card className="mb-8">
@@ -88,7 +120,28 @@ const Reviews = () => {
               <form onSubmit={handleSubmitReview} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Rating
+                    Select District
+                  </label>
+                  <Select
+                    value={selectedDistrict}
+                    onValueChange={setSelectedDistrict}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a district" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {districts.map((district) => (
+                        <SelectItem key={district} value={district}>
+                          {district}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Safety Rating
                   </label>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -110,12 +163,12 @@ const Reviews = () => {
                 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Your Review
+                    Your Experience
                   </label>
                   <Textarea
                     value={newReview}
                     onChange={(e) => setNewReview(e.target.value)}
-                    placeholder="Share your experience..."
+                    placeholder="Share your experience about safety in this district..."
                     className="min-h-[100px]"
                   />
                 </div>
@@ -133,12 +186,13 @@ const Reviews = () => {
               <Card key={review.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <div className="bg-gray-100 p-2 rounded-full">
                         <User className="h-5 w-5 text-gray-500" />
                       </div>
                       <div>
                         <h3 className="font-medium">{review.username}</h3>
+                        <p className="text-sm text-citysafe-blue font-medium">{review.district}</p>
                         <RatingStars rating={review.rating} />
                       </div>
                     </div>

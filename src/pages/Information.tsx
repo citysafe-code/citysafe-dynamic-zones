@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -6,27 +5,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-// Mock data for statistics
+// Updated mock data with real statistics
 const crimeStats = {
   overall: [
-    { category: 'Theft', count: 1245, change: '+5%' },
-    { category: 'Assault', count: 873, change: '-2%' },
-    { category: 'Burglary', count: 642, change: '-8%' },
-    { category: 'Vehicle Theft', count: 598, change: '+12%' },
-    { category: 'Vandalism', count: 423, change: '-1%' },
+    { category: 'Murder for Gain', count: 57, change: '+26.7%' },
+    { category: 'Robberies', count: 529, change: '-7.0%' },
+    { category: 'Burglaries', count: 4806, change: '+13.6%' },
+    { category: 'Ordinary Thefts', count: 15681, change: '+38.2%' },
+    { category: 'Cheating', count: 23332, change: '+152.4%' },
   ],
   byZone: {
     red: [
-      { zone: 'Downtown', incidents: 342, mostCommon: 'Theft' },
-      { zone: 'Silver Lake', incidents: 289, mostCommon: 'Assault' },
+      { zone: 'Hyderabad', incidents: 1668, mostCommon: 'Theft' },
+      { zone: 'Cyberabad', incidents: 1916, mostCommon: 'Burglary' },
     ],
     amber: [
-      { zone: 'West Hills', incidents: 184, mostCommon: 'Burglary' },
-      { zone: 'Northridge', incidents: 167, mostCommon: 'Vehicle Theft' },
+      { zone: 'Rachakonda', incidents: 1662, mostCommon: 'Theft' },
+      { zone: 'Warangal', incidents: 564, mostCommon: 'Murder' },
     ],
     green: [
-      { zone: 'Riverside', incidents: 95, mostCommon: 'Vandalism' },
-      { zone: 'Pasadena', incidents: 87, mostCommon: 'Theft' },
+      { zone: 'Khammam', incidents: 262, mostCommon: 'Theft' },
     ]
   }
 };

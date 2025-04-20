@@ -1,15 +1,156 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { MapPin } from 'lucide-react';
+import LeafletMap from './LeafletMap';
 import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
-import { MapPin, Navigation, Locate } from 'lucide-react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { Locate } from 'lucide-react';
 
 const districtData = [
-  // District crime data stays the same
+  {
+    id: 'cyberabad',
+    name: 'Cyberabad',
+    lat: 17.4854,
+    lng: 78.3746,
+    level: 'red',
+    years: [
+      { year: 2018, murders: 28, dacoity: 173, robbery: 261, burglary: 1724, kidnapping: 1445, rape: 10973 },
+      { year: 2019, murders: 18, dacoity: 284, robbery: 247, burglary: 1916, kidnapping: 1512, rape: 10613 },
+      { year: 2020, murders: 11, dacoity: 304, robbery: 174, burglary: 1662, kidnapping: 1383, rape: 8292 },
+      { year: 2021, murders: 60, dacoity: 304, robbery: 174, burglary: 1662, kidnapping: 1383, rape: 10613 },
+      { year: 2022, murders: 111, dacoity: 174, robbery: 304, burglary: 1662, kidnapping: 1422, rape: 8292 }
+    ]
+  },
+  {
+    id: 'hyderabad',
+    name: 'Hyderabad',
+    lat: 17.3850,
+    lng: 78.4867,
+    level: 'red',
+    years: [
+      { year: 2018, murders: 34, dacoity: 195, robbery: 254, burglary: 1568, kidnapping: 1508, rape: 7898 },
+      { year: 2019, murders: 37, dacoity: 286, robbery: 320, burglary: 1668, kidnapping: 1376, rape: 7646 },
+      { year: 2020, murders: 34, dacoity: 286, robbery: 320, burglary: 1668, kidnapping: 1203, rape: 8114 },
+      { year: 2021, murders: 34, dacoity: 286, robbery: 320, burglary: 1668, kidnapping: 1376, rape: 8114 },
+      { year: 2022, murders: 34, dacoity: 320, robbery: 286, burglary: 1668, kidnapping: 1581, rape: 8114 }
+    ]
+  },
+  {
+    id: 'secunderabad',
+    name: 'Secunderabad',
+    lat: 17.4394,
+    lng: 78.4982,
+    level: 'amber',
+    years: [
+      { year: 2018, murders: 15, dacoity: 92, robbery: 127, burglary: 856, kidnapping: 754, rape: 3949 },
+      { year: 2019, murders: 17, dacoity: 143, robbery: 160, burglary: 934, kidnapping: 688, rape: 3823 },
+      { year: 2020, murders: 17, dacoity: 143, robbery: 160, burglary: 934, kidnapping: 601, rape: 4057 },
+      { year: 2021, murders: 17, dacoity: 143, robbery: 160, burglary: 934, kidnapping: 688, rape: 4057 },
+      { year: 2022, murders: 17, dacoity: 160, robbery: 143, burglary: 934, kidnapping: 790, rape: 4057 }
+    ]
+  },
+  {
+    id: 'rangareddy',
+    name: 'Rangareddy',
+    lat: 17.3466,
+    lng: 78.3068,
+    level: 'amber',
+    years: [
+      { year: 2018, murders: 21, dacoity: 118, robbery: 159, burglary: 1079, kidnapping: 891, rape: 4674 },
+      { year: 2019, murders: 14, dacoity: 196, robbery: 179, burglary: 1277, kidnapping: 945, rape: 4464 },
+      { year: 2020, murders: 14, dacoity: 196, robbery: 179, burglary: 1277, kidnapping: 824, rape: 4700 },
+      { year: 2021, murders: 14, dacoity: 196, robbery: 179, burglary: 1277, kidnapping: 945, rape: 4700 },
+      { year: 2022, murders: 14, dacoity: 179, robbery: 196, burglary: 1277, kidnapping: 1025, rape: 4700 }
+    ]
+  },
+  {
+    id: 'medchal',
+    name: 'Medchal',
+    lat: 17.5686,
+    lng: 78.4744,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 9, dacoity: 46, robbery: 63, burglary: 428, kidnapping: 356, rape: 1862 },
+      { year: 2019, murders: 6, dacoity: 76, robbery: 71, burglary: 557, kidnapping: 370, rape: 1771 },
+      { year: 2020, murders: 6, dacoity: 76, robbery: 71, burglary: 557, kidnapping: 323, rape: 1900 },
+      { year: 2021, murders: 6, dacoity: 76, robbery: 71, burglary: 557, kidnapping: 370, rape: 1900 },
+      { year: 2022, murders: 6, dacoity: 71, robbery: 76, burglary: 557, kidnapping: 403, rape: 1900 }
+    ]
+  },
+  {
+    id: 'sangareddy',
+    name: 'Sangareddy',
+    lat: 17.6344,
+    lng: 78.0441,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 12, dacoity: 61, robbery: 82, burglary: 553, kidnapping: 459, rape: 2405 },
+      { year: 2019, murders: 8, dacoity: 101, robbery: 92, burglary: 719, kidnapping: 476, rape: 2288 },
+      { year: 2020, murders: 8, dacoity: 101, robbery: 92, burglary: 719, kidnapping: 415, rape: 2450 },
+      { year: 2021, murders: 8, dacoity: 101, robbery: 92, burglary: 719, kidnapping: 476, rape: 2450 },
+      { year: 2022, murders: 8, dacoity: 92, robbery: 101, burglary: 719, kidnapping: 513, rape: 2450 }
+    ]
+  },
+  {
+    id: 'vicarabad',
+    name: 'Vicarabad',
+    lat: 17.3375,
+    lng: 77.9044,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 7, dacoity: 38, robbery: 51, burglary: 345, kidnapping: 287, rape: 1503 },
+      { year: 2019, murders: 5, dacoity: 63, robbery: 58, burglary: 451, kidnapping: 299, rape: 1435 },
+      { year: 2020, murders: 5, dacoity: 63, robbery: 58, burglary: 451, kidnapping: 260, rape: 1540 },
+      { year: 2021, murders: 5, dacoity: 63, robbery: 58, burglary: 451, kidnapping: 299, rape: 1540 },
+      { year: 2022, murders: 5, dacoity: 58, robbery: 63, burglary: 451, kidnapping: 328, rape: 1540 }
+    ]
+  },
+  {
+    id: 'yadadri',
+    name: 'Yadadri',
+    lat: 17.2587,
+    lng: 78.8441,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 10, dacoity: 53, robbery: 71, burglary: 479, kidnapping: 398, rape: 2090 },
+      { year: 2019, murders: 7, dacoity: 88, robbery: 80, burglary: 622, kidnapping: 412, rape: 1989 },
+      { year: 2020, murders: 7, dacoity: 88, robbery: 80, burglary: 622, kidnapping: 359, rape: 2130 },
+      { year: 2021, murders: 7, dacoity: 88, robbery: 80, burglary: 622, kidnapping: 412, rape: 2130 },
+      { year: 2022, murders: 7, dacoity: 80, robbery: 88, burglary: 622, kidnapping: 449, rape: 2130 }
+    ]
+  },
+  {
+    id: 'medak',
+    name: 'Medak',
+    lat: 18.0355,
+    lng: 78.2683,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 11, dacoity: 59, robbery: 79, burglary: 532, kidnapping: 443, rape: 2320 },
+      { year: 2019, murders: 7, dacoity: 98, robbery: 89, burglary: 691, kidnapping: 457, rape: 2204 },
+      { year: 2020, murders: 7, dacoity: 98, robbery: 89, burglary: 691, kidnapping: 400, rape: 2360 },
+      { year: 2021, murders: 7, dacoity: 98, robbery: 89, burglary: 691, kidnapping: 457, rape: 2360 },
+      { year: 2022, murders: 7, dacoity: 89, robbery: 98, burglary: 691, kidnapping: 497, rape: 2360 }
+    ]
+  },
+  {
+    id: 'siddipet',
+    name: 'Siddipet',
+    lat: 18.4727,
+    lng: 78.8558,
+    level: 'green',
+    years: [
+      { year: 2018, murders: 8, dacoity: 42, robbery: 56, burglary: 378, kidnapping: 315, rape: 1656 },
+      { year: 2019, murders: 5, dacoity: 70, robbery: 63, burglary: 491, kidnapping: 325, rape: 1574 },
+      { year: 2020, murders: 5, dacoity: 70, robbery: 63, burglary: 491, kidnapping: 283, rape: 1690 },
+      { year: 2021, murders: 5, dacoity: 70, robbery: 63, burglary: 491, kidnapping: 325, rape: 1690 },
+      { year: 2022, murders: 5, dacoity: 63, robbery: 70, burglary: 491, kidnapping: 354, rape: 1690 }
+    ]
+  }
 ];
+
+const availableYears = [2018, 2019, 2020, 2021, 2022];
 
 const calculateSafetyLevel = (district) => {
   const latestYear = district.years[district.years.length - 1];
@@ -65,151 +206,16 @@ const ZoneCard = ({ district, selectedYear, onClick }) => {
 };
 
 const MapComponent = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapboxMapRef = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState(() => localStorage.getItem('mapbox_token') || '');
-  const [filter, setFilter] = useState('all');
   const [selectedYear, setSelectedYear] = useState(2022);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedDistrict, setSelectedDistrict] = useState<(typeof districtData)[0] | null>(null);
-  const [showMapTokenInput, setShowMapTokenInput] = useState(!localStorage.getItem('mapbox_token'));
-  const markersRef = useRef<{
-    userMarker?: mapboxgl.Marker;
-    [key: string]: mapboxgl.Marker | undefined;
-  }>({});
-  
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          
-          if (mapboxMapRef.current) {
-            if (!markersRef.current.userMarker) {
-              const userMarkerElement = document.createElement('div');
-              userMarkerElement.className = 'user-marker';
-              userMarkerElement.innerHTML = `
-                <div class="animate-pulse w-5 h-5 bg-citysafe-blue rounded-full flex items-center justify-center">
-                  <div class="w-3 h-3 bg-white rounded-full"></div>
-                </div>
-              `;
-              
-              markersRef.current.userMarker = new mapboxgl.Marker(userMarkerElement)
-                .setLngLat([longitude, latitude])
-                .addTo(mapboxMapRef.current);
-            } else {
-              markersRef.current.userMarker.setLngLat([longitude, latitude]);
-            }
-            
-            mapboxMapRef.current.flyTo({
-              center: [longitude, latitude],
-              zoom: 10,
-              essential: true
-            });
-          }
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    }
-  };
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    if (!mapRef.current || !mapboxToken) return;
-    
-    mapboxgl.accessToken = mapboxToken;
-    
-    try {
-      const map = new mapboxgl.Map({
-        container: mapRef.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [78.4867, 17.3850],
-        zoom: 7
-      });
-      
-      mapboxMapRef.current = map;
-      
-      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      
-      map.on('load', () => {
-        districtData.forEach(district => {
-          const { lat, lng, name, level } = district;
-          
-          const markerElement = document.createElement('div');
-          markerElement.className = 'district-marker';
-          const markerColor = level === 'red' ? 'bg-citysafe-red' : level === 'amber' ? 'bg-citysafe-amber' : 'bg-citysafe-green';
-          markerElement.innerHTML = `
-            <div class="${markerColor} w-4 h-4 rounded-full border-2 border-white shadow-md"></div>
-          `;
-          
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div class="p-2">
-              <strong>${name}</strong>
-              <p class="text-sm">Click for details</p>
-            </div>
-          `);
-          
-          const marker = new mapboxgl.Marker(markerElement)
-            .setLngLat([lng, lat])
-            .setPopup(popup)
-            .addTo(map);
-          
-          markersRef.current[district.id] = marker;
-          
-          markerElement.addEventListener('click', () => {
-            setSelectedDistrict(district);
-            map.flyTo({
-              center: [lng, lat],
-              zoom: 11,
-              essential: true
-            });
-          });
-        });
-      });
-      
-      return () => {
-        map.remove();
-      };
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      localStorage.removeItem('mapbox_token');
-      setShowMapTokenInput(true);
-    }
-  }, [mapboxToken]);
-  
-  useEffect(() => {
-    if (!mapboxMapRef.current) return;
-    
-    districtData.forEach(district => {
-      const marker = markersRef.current[district.id];
-      if (!marker) return;
-      
-      if (filter === 'all' || district.level === filter) {
-        marker.getElement().style.display = 'block';
-      } else {
-        marker.getElement().style.display = 'none';
-      }
-    });
-  }, [filter]);
+  const filteredDistricts = districtData.filter(
+    district => filter === 'all' || district.level === filter
+  );
 
   const handleDistrictCardClick = (district: typeof districtData[0]) => {
     setSelectedDistrict(district);
-    
-    if (mapboxMapRef.current) {
-      mapboxMapRef.current.flyTo({
-        center: [district.lng, district.lat],
-        zoom: 11,
-        essential: true
-      });
-    }
-  };
-
-  const handleTokenSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    localStorage.setItem('mapbox_token', mapboxToken);
-    setShowMapTokenInput(false);
   };
 
   return (
@@ -263,7 +269,6 @@ const MapComponent = () => {
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={getUserLocation}
                     title="Find my location"
                     className="mr-2"
                   >
@@ -283,45 +288,17 @@ const MapComponent = () => {
                 </div>
               </div>
             </div>
-            
             <div className="h-[calc(100%-80px)] w-full">
-              {showMapTokenInput ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="w-full max-w-md p-6">
-                    <h3 className="text-lg font-semibold mb-4">Mapbox API Key Required</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      To view the interactive map, please enter your Mapbox public token. 
-                      You can get one for free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-citysafe-blue hover:underline">mapbox.com</a>.
-                    </p>
-                    <form onSubmit={handleTokenSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <label htmlFor="mapboxToken" className="text-sm font-medium">
-                          Mapbox Public Token
-                        </label>
-                        <input 
-                          type="text" 
-                          id="mapboxToken"
-                          value={mapboxToken}
-                          onChange={(e) => setMapboxToken(e.target.value)}
-                          className="w-full p-2 border rounded-md text-sm"
-                          placeholder="pk.eyJ1IjoieW91..."
-                          required
-                        />
-                      </div>
-                      <Button type="submit" disabled={!mapboxToken.trim()}>
-                        Load Map
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-              ) : (
-                <div ref={mapRef} className="h-full w-full"></div>
-              )}
+              <LeafletMap
+                districts={filteredDistricts}
+                selectedYear={selectedYear}
+                onDistrictClick={setSelectedDistrict}
+              />
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="col-span-1">
         <h2 className="text-xl font-semibold mb-4">Safety by District ({selectedYear})</h2>
         <div className="h-[550px] overflow-y-auto pr-2">

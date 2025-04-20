@@ -83,7 +83,14 @@ const ScaledCircleMarkers = ({ districts, onDistrictClick, getMarkerColor }: {
               fillOpacity: 0.4,
               weight: 1,
             }}
-            radius={getScaledRadius(district.level)}
+            // The radius property needs to be applied properly for CircleMarker
+            pathOptions={{
+              radius: getScaledRadius(district.level),
+              color,
+              fillColor: color,
+              fillOpacity: 0.4,
+              weight: 1,
+            }}
             eventHandlers={{
               click: () => onDistrictClick(district),
             }}
@@ -164,8 +171,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   return (
     <div className="relative h-full">
       <MapContainer
-        defaultCenter={[17.3850, 78.4867]} 
-        defaultZoom={8}
+        center={[17.3850, 78.4867]} 
+        zoom={8}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
       >
@@ -198,7 +205,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
               <Marker
                 key={district.id}
                 position={[district.lat, district.lng]}
-                icon={customIcon as any}
+                icon={customIcon}
                 eventHandlers={{
                   click: () => onDistrictClick(district),
                 }}

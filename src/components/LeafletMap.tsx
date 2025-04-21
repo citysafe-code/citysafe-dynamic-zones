@@ -4,7 +4,8 @@ import {
   MapContainer, 
   TileLayer, 
   Marker, 
-  Popup
+  Popup,
+  ZoomControl
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -68,17 +69,29 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     }
   };
 
+  // Function to create fixed size markers that don't scale with zoom
+  const createFixedSizeMarker = (color: string) => {
+    return new L.DivIcon({
+      className: "custom-div-icon",
+      html: `<div style="background-color: ${color}" class="marker-pin w-4 h-4 rounded-full border-2 border-white shadow-md"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+  };
+
   return (
     <div className="relative h-full">
       <MapContainer
-        center={[17.385, 78.4867] as L.LatLngExpression}
+        center={[17.385, 78.4867]}
         zoom={8}
         style={{ height: "100%", width: "100%" }}
         className="rounded-lg"
+        zoomControl={false}
       >
+        <ZoomControl position="bottomleft" />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
         <MapReference setMapRef={setMapRef} />
@@ -92,16 +105,12 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         ) : (
           districts.map((district) => {
             const color = getMarkerColor(district.level);
-            const customIcon = new L.DivIcon({
-              className: "custom-div-icon",
-              html: `<div style="background-color: ${color}" class="marker-pin w-4 h-4 rounded-full border-2 border-white shadow-md"></div>`,
-              iconSize: [16, 16],
-              iconAnchor: [8, 8],
-            });
+            const customIcon = createFixedSizeMarker(color);
+            
             return (
               <Marker
                 key={district.id}
-                position={[district.lat, district.lng] as L.LatLngExpression}
+                position={[district.lat, district.lng]}
                 icon={customIcon}
                 eventHandlers={{
                   click: () => onDistrictClick(district),

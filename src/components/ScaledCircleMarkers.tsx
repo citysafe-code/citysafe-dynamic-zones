@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CircleMarker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
@@ -32,38 +32,37 @@ const ScaledCircleMarkers: React.FC<ScaledCircleMarkersProps> = ({
   onDistrictClick,
   getMarkerColor,
 }) => {
-  // Used to force update on zoom end
+  // Get map instance and current zoom level
   const map = useMapEvents({
     zoomend: () => setZoom(map.getZoom()),
   });
   const [zoom, setZoom] = useState(map.getZoom());
-
-  // Maintain visually fixed-size circles by inversely scaling their radius with zoom level
-  const getFixedPixelRadius = (level: string) => {
-    // Approximate constant pixel size (by inversely scaling)
-    // Standard Leaflet zoom, 1 unit radius ≈ 1 pixel at zoom 0, so scale down as zoom increases
-    // Let's use an exponential factor for smoothness
-    const baseRadius = level === "red" ? 30 : level === "amber" ? 20 : 10;
-    const scale = Math.pow(2, 8 - zoom);
-    return Math.max(6, baseRadius * scale);
+  
+  // Get the circle size based on risk level
+  const getCircleRadius = (level: string) => {
+    // Return a fixed base size for each risk level
+    return level === "red" ? 10 : level === "amber" ? 8 : 6;
   };
 
   return (
     <>
       {districts.map((district) => {
         const color = getMarkerColor(district.level);
-        const pixelRadius = getFixedPixelRadius(district.level);
+        const radius = getCircleRadius(district.level);
+        
         return (
           <CircleMarker
             key={district.id}
             center={[district.lat, district.lng] as L.LatLngExpression}
+            radius={radius}
             pathOptions={{
               color,
               fillColor: color,
               fillOpacity: 0.4,
               weight: 1,
-              radius: pixelRadius,
             }}
+            // Important: this ensures circles stay fixed size when zooming
+            pane="markerPane"
             eventHandlers={{
               click: () => onDistrictClick(district),
             }}

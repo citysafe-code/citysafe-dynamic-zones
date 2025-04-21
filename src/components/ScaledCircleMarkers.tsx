@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { CircleMarker, Popup, useMapEvents } from "react-leaflet";
+import L from "leaflet";
 
 // All necessary types are duplicated here for local usage
 interface District {
@@ -55,13 +56,13 @@ const ScaledCircleMarkers: React.FC<ScaledCircleMarkersProps> = ({
         return (
           <CircleMarker
             key={district.id}
-            center={[district.lat, district.lng]}
-            radius={pixelRadius}
+            center={[district.lat, district.lng] as L.LatLngExpression}
             pathOptions={{
               color,
               fillColor: color,
               fillOpacity: 0.4,
               weight: 1,
+              radius: pixelRadius,
             }}
             eventHandlers={{
               click: () => onDistrictClick(district),
@@ -81,4 +82,3 @@ const ScaledCircleMarkers: React.FC<ScaledCircleMarkersProps> = ({
 };
 
 export default ScaledCircleMarkers;
-

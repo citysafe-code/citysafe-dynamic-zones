@@ -1,12 +1,11 @@
+
 import React, { useState } from 'react';
 import { 
   MapContainer, 
   TileLayer, 
   Marker, 
-  Popup, 
-  L,
+  Popup
 } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Locate } from 'lucide-react';
@@ -72,14 +71,14 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   return (
     <div className="relative h-full">
       <MapContainer
-        center={[17.385, 78.4867]}
+        center={[17.385, 78.4867] as L.LatLngExpression}
         zoom={8}
         style={{ height: "100%", width: "100%" }}
         className="rounded-lg"
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         <MapReference setMapRef={setMapRef} />
@@ -93,9 +92,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         ) : (
           districts.map((district) => {
             const color = getMarkerColor(district.level);
-            const customIcon = new (window.L
-              ? window.L.DivIcon
-              : L.DivIcon)({
+            const customIcon = new L.DivIcon({
               className: "custom-div-icon",
               html: `<div style="background-color: ${color}" class="marker-pin w-4 h-4 rounded-full border-2 border-white shadow-md"></div>`,
               iconSize: [16, 16],
@@ -104,7 +101,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
             return (
               <Marker
                 key={district.id}
-                position={[district.lat, district.lng]}
+                position={[district.lat, district.lng] as L.LatLngExpression}
                 icon={customIcon}
                 eventHandlers={{
                   click: () => onDistrictClick(district),

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   MapContainer, 
@@ -61,29 +60,31 @@ const ScaledCircleMarkers = ({ districts, onDistrictClick, getMarkerColor }: {
   
   const [zoom, setZoom] = useState(map.getZoom());
   
-  // Calculate scaled radius based on zoom level
-  const getScaledRadius = (level: string) => {
-    const baseRadius = level === 'red' ? 30 : level === 'amber' ? 20 : 10;
-    // Adjust the scaling factor based on zoom level
-    const scaleFactor = Math.pow(0.65, zoom - 8); // 8 is the default zoom level
-    return baseRadius * scaleFactor;
+  // Calculate base radius without scaling
+  const getBaseRadius = (level: string) => {
+    return level === 'red' ? 30 : level === 'amber' ? 20 : 10;
   };
 
   return (
     <>
       {districts.map((district) => {
         const color = getMarkerColor(district.level);
+        const baseRadius = getBaseRadius(district.level);
+        
         return (
           <CircleMarker
             key={district.id}
             center={[district.lat, district.lng]}
-            radius={getScaledRadius(district.level)}
             pathOptions={{
               color,
               fillColor: color,
               fillOpacity: 0.4,
               weight: 1,
             }}
+            // Apply radius through direct property that doesn't get affected by zoom
+            radius={baseRadius}
+            // This keeps radius constant regardless of zoom level
+            pane="markerPane"
             eventHandlers={{
               click: () => onDistrictClick(district),
             }}
@@ -164,14 +165,12 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   return (
     <div className="relative h-full">
       <MapContainer
-        // Fix: Use 'defaultCenter' and 'defaultZoom' instead of 'center' and 'zoom'
-        center={[17.3850, 78.4867]} 
-        zoom={8}
+        defaultCenter={[17.3850, 78.4867]} 
+        defaultZoom={8}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
       >
         <TileLayer
-          // Fix: Use URL and attribution separately
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
@@ -200,7 +199,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
               <Marker
                 key={district.id}
                 position={[district.lat, district.lng]}
-                // Fix: Remove icon prop and use properties accepted by react-leaflet 
                 icon={customIcon}
                 eventHandlers={{
                   click: () => onDistrictClick(district),
